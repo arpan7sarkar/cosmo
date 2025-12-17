@@ -1,0 +1,206 @@
+import { useState } from "react";
+import { Button } from "../components/ui/Button";
+import { Card, CardContent } from "../components/ui/Card";
+import { CheckCircle, FileText, UploadCloud, Calendar, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { cn } from "../lib/utils";
+import { uploadSyllabus, generateStudyPlan } from "../lib/api";
+
+export function SyllabusUpload() {
+  const navigate = useNavigate();
+  const [dragActive, setDragActive] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleFile = (file: File) => {
+    setFile(file);
+    setUploadSuccess(false);
+    setProgress(0);
+    setError(null);
+  };
+
+  const startUpload = async () => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    setProgress(10);
+
+    try {
+      // Upload syllabus
+      setProgress(30);
+      const uploadResult = await uploadSyllabus(file);
+      setProgress(60);
+
+      if (uploadResult.success) {
+        // Generate study plan
+        const planResult = await generateStudyPlan(uploadResult.data.studyPlanId);
+        setProgress(100);
+
+        setAnalysisResult({
+          ...uploadResult.data,
+          ...planResult.data
+        });
+        setUploadSuccess(true);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to process syllabus');
+      setProgress(0);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-white mb-4">Upload Your Syllabus</h1>
+        <p className="text-gray-400">
+          Upload your course PDF or image. Our AI will analyze it and create a personalized study plan.
+        </p>
+      </div>
+
+      <Card className="bg-cosmic-blue/20 border-white/10 overflow-hidden">
+        <CardContent className="p-8">
+          {error && (
+            <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400">
+              {error}
+            </div>
+          )}
+
+          {!uploadSuccess ? (
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 flex flex-col items-center justify-center min-h-[300px]",
+                dragActive ? "border-highlight-cyan bg-highlight-cyan/5" : "border-gray-600 hover:border-gray-400 bg-space-black/50",
+                file ? "border-nebula-purple" : ""
+              )}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                className="hidden"
+                id="file-upload"
+                accept=".pdf,.png,.jpg,.jpeg"
+                onChange={handleChange}
+              />
+
+              {!file ? (
+                <>
+                  <div className="w-16 h-16 bg-space-black rounded-full flex items-center justify-center mb-4 border border-white/10 shadow-lg shadow-highlight-cyan/10">
+                    <UploadCloud className="w-8 h-8 text-highlight-cyan" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2">Drag & Drop your file here</h3>
+                  <p className="text-gray-400 mb-6">or</p>
+                  <label
+                    htmlFor="file-upload"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 border border-nebula-purple text-nebula-purple hover:bg-nebula-purple hover:text-white cursor-pointer transition-colors"
+                  >
+                    Browse Files
+                  </label>
+                  <p className="text-xs text-gray-500 mt-4">Supported formats: PDF, PNG, JPG (Max 10MB)</p>
+                </>
+              ) : (
+                <div className="w-full max-w-md">
+                  <div className="flex items-center p-4 bg-space-black/60 rounded-lg border border-white/10 mb-6">
+                    <FileText className="w-8 h-8 text-nebula-purple mr-4" />
+                    <div className="flex-1 text-left">
+                      <p className="text-white font-medium truncate">{file.name}</p>
+                      <p className="text-sm text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => setFile(null)} disabled={uploading}>Change</Button>
+                  </div>
+
+                  {uploading ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm text-gray-400">
+                        <span className="flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Analyzing syllabus with AI...
+                        </span>
+                        <span>{progress}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-nebula-purple transition-all duration-300"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <Button variant="neon" size="lg" className="w-full" onClick={startUpload}>
+                      Generate Study Plan
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 animate-fade-in-up">
+              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-4">Syllabus Analyzed!</h2>
+              <p className="text-gray-300 mb-8 max-w-md mx-auto">
+                We've identified <span className="text-highlight-cyan font-bold">{analysisResult?.totalTopics || 15}</span> key topics
+                and created <span className="text-highlight-cyan font-bold">{analysisResult?.eventsCreated || 0}</span> study sessions.
+              </p>
+              {analysisResult?.tips && (
+                <div className="mb-8 text-left max-w-md mx-auto">
+                  <h4 className="text-sm font-bold text-white mb-2">Study Tips:</h4>
+                  <ul className="text-sm text-gray-400 space-y-1">
+                    {analysisResult.tips.slice(0, 3).map((tip: string, i: number) => (
+                      <li key={i}>• {tip}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex justify-center gap-4">
+                <Link to="/planner">
+                  <Button variant="neon" size="lg" className="gap-2">
+                    <Calendar className="w-4 h-4" /> View Study Plan
+                  </Button>
+                </Link>
+                <Button variant="ghost" onClick={() => { setFile(null); setUploadSuccess(false); setAnalysisResult(null); }}>
+                  Upload Another
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
