@@ -12,7 +12,6 @@ export const createCalendarEvents = async (plan, userId, studyPlanId) => {
 
   // Guard against missing schedule
   if (!plan || !plan.schedule || !Array.isArray(plan.schedule)) {
-    console.log('No valid schedule in plan');
     return events;
   }
 

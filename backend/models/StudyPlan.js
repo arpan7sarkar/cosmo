@@ -37,6 +37,14 @@ const studyPlanSchema = new mongoose.Schema({
   syllabusText: {
     type: String
   },
+  tips: [{
+    type: String
+  }],
+  estimatedReadiness: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
   createdAt: {
     type: Date,
     default: Date.now

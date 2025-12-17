@@ -1,6 +1,6 @@
 import StudyPlan from '../models/StudyPlan.js';
 import CalendarEvent from '../models/CalendarEvent.js';
-import { generateStudyPlanWithAI } from '../services/geminiService.js';
+import { generateStudyPlanWithAI } from '../services/geminiServices/planner.js';
 import { createCalendarEvents, getCalendarEvents, updateEventCompletion } from '../services/plannerEngine.js';
 
 /**
@@ -9,11 +9,16 @@ import { createCalendarEvents, getCalendarEvents, updateEventCompletion } from '
  */
 export const generateStudyPlan = async (req, res) => {
   try {
-    const { studyPlanId, hoursPerDay = 4 } = req.body;
+    const { studyPlanId, hoursPerDay = 4, examDate } = req.body;
 
     const studyPlan = await StudyPlan.findById(studyPlanId);
     if (!studyPlan) {
       return res.status(404).json({ error: 'Study plan not found' });
+    }
+
+    // Override exam date if provided by user
+    if (examDate) {
+      studyPlan.examDate = new Date(examDate);
     }
 
     // Delete old calendar events for this study plan
@@ -29,8 +34,10 @@ export const generateStudyPlan = async (req, res) => {
     // Create calendar events
     const events = await createCalendarEvents(plan, studyPlan.userId, studyPlan._id);
 
-    // Update study plan with hours per day
+    // Update study plan with hours per day and AI metadata
     studyPlan.hoursPerDay = hoursPerDay;
+    studyPlan.tips = plan.tips;
+    studyPlan.estimatedReadiness = plan.estimatedReadiness;
     await studyPlan.save();
 
     res.json({
@@ -46,6 +53,28 @@ export const generateStudyPlan = async (req, res) => {
     });
   } catch (error) {
     console.error('Generate study plan error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/**
+ * Get study plan details
+ * GET /api/study-plan/:id
+ */
+export const getStudyPlan = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const studyPlan = await StudyPlan.findById(id);
+
+    if (!studyPlan) {
+      return res.status(404).json({ error: 'Study plan not found' });
+    }
+
+    res.json({
+      success: true,
+      data: studyPlan
+    });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
@@ -165,4 +194,4 @@ export const clearCalendar = async (req, res) => {
   }
 };
 
-export default { generateStudyPlan, getStudyCalendar, updateCalendarEvent, clearCalendar };
+export default { generateStudyPlan, getStudyCalendar, updateCalendarEvent, clearCalendar, getStudyPlan };

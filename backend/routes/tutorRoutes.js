@@ -15,4 +15,7 @@ router.post('/submit-quiz', submitQuiz);
 // Get quiz history
 router.get('/quiz-history', getQuizHistory);
 
+// Get chat history
+router.get('/chat-history', (await import('../controllers/tutorController.js')).getChatHistory);
+
 export default router;

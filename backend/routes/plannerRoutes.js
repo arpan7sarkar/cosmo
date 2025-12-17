@@ -12,6 +12,9 @@ router.get('/study-calendar', getStudyCalendar);
 // Update calendar event
 router.patch('/calendar-event/:id', updateCalendarEvent);
 
+// Get study plan details
+router.get('/study-plan/:id', (await import('../controllers/plannerController.js')).getStudyPlan);
+
 // Clear calendar (for testing/reset)
 router.delete('/clear-calendar', clearCalendar);
 
