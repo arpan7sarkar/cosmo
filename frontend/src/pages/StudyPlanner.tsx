@@ -6,7 +6,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useState, useEffect } from 'react';
 import { getStudyCalendar, updateCalendarEvent } from '../lib/api';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Upload, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const locales = {
   'en-US': enUS,
@@ -113,7 +114,9 @@ export function StudyPlanner() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Study Planner</h1>
-          <p className="text-gray-400">Your roadmap to mastery. Click on events to mark them complete.</p>
+          <p className="text-gray-400">
+            Your roadmap to mastery. Click on events to mark them complete.
+          </p>
         </div>
         <Button variant="outline" onClick={fetchEvents} disabled={loading} className="gap-2">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -131,6 +134,22 @@ export function StudyPlanner() {
         {loading ? (
           <div className="h-full flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-nebula-purple animate-spin" />
+          </div>
+        ) : events.length === 0 && !error ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-8">
+            <div className="w-20 h-20 bg-nebula-purple/20 rounded-full flex items-center justify-center mb-6">
+              <BookOpen className="w-10 h-10 text-nebula-purple" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">No Study Plan Yet</h2>
+            <p className="text-gray-400 mb-6 max-w-md">
+              Upload your syllabus to generate a personalized study plan. Our AI will analyze your curriculum and create a smart schedule.
+            </p>
+            <Link to="/upload">
+              <Button variant="neon" size="lg" className="gap-2">
+                <Upload className="w-5 h-5" />
+                Upload Syllabus
+              </Button>
+            </Link>
           </div>
         ) : (
           <div className="h-full study-calendar-wrapper">

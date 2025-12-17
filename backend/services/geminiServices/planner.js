@@ -81,7 +81,8 @@ const generateBasicPlan = (subjects, examDate, hoursPerDay) => {
   let allTopics = [];
   subjects.forEach((subject) => {
     subject.topics.forEach((topic) => {
-      allTopics.push({ ...topic, subject: subject.name });
+      const topicObj = topic.toObject ? topic.toObject() : topic;
+      allTopics.push({ ...topicObj, subject: subject.name });
     });
   });
 
