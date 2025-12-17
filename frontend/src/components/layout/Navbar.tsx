@@ -21,7 +21,7 @@ export function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link to="/dashboard">
-              <Button variant="neon" size="sm">Get Started</Button>
+              <Button variant="neon" size="sm">Dashboard</Button>
             </Link>
           </div>
         </div>

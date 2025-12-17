@@ -123,6 +123,12 @@ export async function submitQuiz(topic: string, answers: any[]) {
 export async function getQuizHistory(userId?: string) {
   const params = userId ? `?userId=${userId}` : '';
   return fetchAPI(`/quiz-history${params}`);
+}/**
+ * Get chat history
+ */
+export async function getChatHistory(userId?: string) {
+  const params = userId ? `?userId=${userId}` : '';
+  return fetchAPI(`/chat-history${params}`);
 }
 
 // ==================== Health Check ====================
@@ -141,5 +147,6 @@ export default {
   generateQuiz,
   submitQuiz,
   getQuizHistory,
+  getChatHistory,
   healthCheck,
 };

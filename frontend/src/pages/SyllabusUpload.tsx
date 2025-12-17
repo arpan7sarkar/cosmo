@@ -2,12 +2,12 @@ import { useState } from "react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { CheckCircle, FileText, UploadCloud, Calendar, Loader2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link} from "react-router-dom";
 import { cn } from "../lib/utils";
 import { uploadSyllabus, generateStudyPlan } from "../lib/api";
 
 export function SyllabusUpload() {
-  const navigate = useNavigate();
+ // const navigate = useNavigate();
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);

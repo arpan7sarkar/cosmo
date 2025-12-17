@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
-import { Bot, ChevronRight, Send, Sparkles, User, Trophy, Loader2 } from "lucide-react";
+import { Bot, ChevronRight, Send, Sparkles, User, Trophy, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "../lib/utils";
-import { explainTopic, generateQuiz } from "../lib/api";
+import { explainTopic, generateQuiz, submitQuiz, getChatHistory } from "../lib/api";
 
 const TOPICS = [
   "Quantum Mechanics",
@@ -36,6 +36,13 @@ interface QuizQuestion {
   explanation: string;
 }
 
+interface QuizResult {
+  score: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  passed: boolean;
+}
+
 export function AITutor() {
   const [selectedTopic, setSelectedTopic] = useState(TOPICS[0]);
   const [selectedAnalogy, setSelectedAnalogy] = useState(ANALOGIES[0].id);
@@ -47,6 +54,41 @@ export function AITutor() {
   const [quiz, setQuiz] = useState<QuizQuestion[] | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizLoading, setQuizLoading] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    loadChatHistory();
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const loadChatHistory = async () => {
+    try {
+      const response = await getChatHistory();
+      if (response.success && response.data.length > 0) {
+        // Transform backend messages to frontend format if needed
+        // Assuming backed format matches or is close enough
+        setMessages(prev => [
+          prev[0], // Keep the initial greeting
+          ...response.data.map((m: any) => ({
+            role: m.role === 'model' ? 'ai' : m.role,
+            content: m.content
+          }))
+        ]);
+      }
+    } catch (err) {
+      console.error("Failed to load history", err);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
@@ -81,6 +123,9 @@ export function AITutor() {
 
   const handleGenerateQuiz = async () => {
     setQuizLoading(true);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+    setQuizResult(null);
     try {
       const response = await generateQuiz(selectedTopic, 5);
       if (response.success && response.data.questions) {
@@ -90,6 +135,38 @@ export function AITutor() {
       console.error('Failed to generate quiz');
     } finally {
       setQuizLoading(false);
+    }
+  };
+
+  const handleOptionSelect = (questionId: number, option: string) => {
+    if (quizSubmitted) return;
+    setQuizAnswers(prev => ({
+      ...prev,
+      [questionId]: option
+    }));
+  };
+
+  const handleSubmitQuiz = async () => {
+    if (!quiz) return;
+    
+    // Calculate local results first to show immediate feedback (optional, but good for UX)
+    // Then send to backend
+    
+    // Construct answers payload
+    const formattedAnswers = quiz.map(q => ({
+      questionId: q.id,
+      selectedAnswer: quizAnswers[q.id] || "",
+      isCorrect: quizAnswers[q.id] === q.correctAnswer
+    }));
+
+    try {
+      const response = await submitQuiz(selectedTopic, formattedAnswers);
+      if (response.success) {
+        setQuizResult(response.data);
+        setQuizSubmitted(true);
+      }
+    } catch (err) {
+      console.error("Failed to submit quiz", err);
     }
   };
 
@@ -205,27 +282,86 @@ export function AITutor() {
                  </div>
                </div>
              )}
+             <div ref={messagesEndRef} />
            </div>
 
            {/* Quiz Panel */}
            {quiz && quiz.length > 0 && (
-             <div className="p-4 border-t border-white/10 bg-yellow-500/5 max-h-64 overflow-y-auto">
-               <h4 className="text-sm font-bold text-yellow-400 mb-3">Quick Quiz</h4>
-               {quiz.map((q, i) => (
-                 <div key={q.id} className="mb-4">
-                   <p className="text-sm text-white mb-2">{i + 1}. {q.question}</p>
-                   <div className="grid grid-cols-2 gap-2">
-                     {q.options.map((opt, j) => (
-                       <button 
-                         key={j} 
-                         className="text-left text-xs p-2 rounded bg-space-black/50 border border-white/10 hover:border-yellow-400/50 text-gray-300"
-                       >
-                         {opt}
-                       </button>
-                     ))}
+             <div className="p-4 border-t border-white/10 bg-space-black/40 max-h-96 overflow-y-auto">
+               <div className="flex justify-between items-center mb-4">
+                 <h4 className="text-lg font-bold text-yellow-400 flex items-center gap-2">
+                   <Trophy className="w-5 h-5" /> Quick Quiz: {selectedTopic}
+                 </h4>
+                 {quizResult && (
+                   <div className={cn("px-3 py-1 rounded-full text-sm font-bold", quizResult.passed ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400")}>
+                     Score: {quizResult.score}%
                    </div>
+                 )}
+               </div>
+
+               <div className="space-y-6">
+                 {quiz.map((q, i) => {
+                   // const isCorrect = quizAnswers[q.id] === q.correctAnswer;
+                   // const isSelected = !!quizAnswers[q.id];
+                   
+                   return (
+                     <div key={q.id} className="space-y-3">
+                       <p className="text-sm font-medium text-white">{i + 1}. {q.question}</p>
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                         {q.options.map((opt, j) => {
+                           // Determine styling based on state
+                           let btnClass = "bg-space-black/50 border-white/10 text-gray-300 hover:border-white/30";
+                           
+                           if (quizSubmitted) {
+                             if (opt === q.correctAnswer) {
+                               btnClass = "bg-green-500/20 border-green-500/50 text-green-300";
+                             } else if (opt === quizAnswers[q.id]) {
+                               btnClass = "bg-red-500/20 border-red-500/50 text-red-300";
+                             } else {
+                               btnClass = "opacity-50";
+                             }
+                           } else if (quizAnswers[q.id] === opt) {
+                             btnClass = "bg-yellow-500/20 border-yellow-400 text-yellow-200";
+                           }
+
+                           return (
+                             <button 
+                               key={j} 
+                               onClick={() => handleOptionSelect(q.id, opt)}
+                               disabled={quizSubmitted}
+                               className={cn(
+                                 "text-left text-xs p-3 rounded-lg border transition-all flex justify-between items-center",
+                                 btnClass
+                               )}
+                             >
+                               {opt}
+                               {quizSubmitted && opt === q.correctAnswer && <CheckCircle className="w-4 h-4 text-green-400" />}
+                               {quizSubmitted && opt === quizAnswers[q.id] && opt !== q.correctAnswer && <XCircle className="w-4 h-4 text-red-400" />}
+                             </button>
+                           );
+                         })}
+                       </div>
+                       {quizSubmitted && (
+                         <div className="text-xs p-3 bg-white/5 rounded-lg text-gray-300 border-l-2 border-yellow-400">
+                           <span className="font-bold text-yellow-400">Explanation:</span> {q.explanation}
+                         </div>
+                       )}
+                     </div>
+                   );
+                 })}
+               </div>
+               
+               {!quizSubmitted && (
+                 <div className="mt-6 flex justify-end">
+                   <Button 
+                     variant="neon" 
+                     onClick={handleSubmitQuiz}
+                     disabled={Object.keys(quizAnswers).length !== quiz.length}
+                   >
+                     Submit Answers
+                   </Button>
                  </div>
-               ))}
+               )}
              </div>
            )}
 

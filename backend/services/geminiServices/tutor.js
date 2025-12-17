@@ -38,7 +38,9 @@ Make it engaging, memorable, and educational. Response must be valid JSON only.`
     const response = await result.response;
     const text = response.text();
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    let cleanText = text.replace(/```json/g, '').replace(/```/g, '');
+    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+    
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
