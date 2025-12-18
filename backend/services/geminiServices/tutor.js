@@ -1,4 +1,5 @@
 import { getModel } from './model.js';
+import { generateContentWithRetry } from './utils.js';
 
 /**
  * Explain topic with analogy
@@ -7,28 +8,7 @@ import { getModel } from './model.js';
  * @returns {Promise<Object>} - Explanation with analogy
  */
 
-/**
- * Helper to generate content with retry logic for 503 errors
- */
-const generateContentWithRetry = async (model, prompt, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await model.generateContent(prompt);
-      return result;
-    } catch (error) {
-      const isOverloaded = error.message.includes('503') || error.message.includes('overloaded');
 
-      if (isOverloaded && i < retries - 1) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, i) * 1000;
-        console.log(`Gemini overloaded. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
-};
 
 export const explainTopicWithAnalogy = async (topic, analogy = "reallife") => {
   const model = getModel();
@@ -55,15 +35,19 @@ Provide a response in this JSON format:
   "relatedTopics": ["topic 1", "topic 2"]
 }
 
-Make it engaging, memorable, and educational. Response must be valid JSON only.`;
+Make it engaging, memorable, and educational.
+
+Rules for formatting:
+1. Response must be valid JSON only
+2. IMPORTANT: Wrap ALL mathematical formulas in dollar signs ($) for LaTeX rendering (e.g., use "$\\\\frac{1}{2}$", not "\\frac{1}{2}" or "1/2").
+3. IMPORTANT: You MUST double-escape all backslashes (e.g., use "$\\\\psi$" instead of "$\\psi$").`;
 
   try {
     const result = await generateContentWithRetry(model, prompt);
     const response = await result.response;
     const text = response.text();
 
-    let cleanText = text.replace(/```json/g, '').replace(/```/g, '');
-    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);

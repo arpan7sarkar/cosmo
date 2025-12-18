@@ -167,7 +167,9 @@ export function AITutor() {
     // Construct answers payload
     const formattedAnswers = quiz.map(q => {
       const selected = quizAnswers[q.id] || "";
-      const isCorrect = selected.startsWith(q.correctAnswer + ")") || selected.startsWith(q.correctAnswer + ".");
+      const match = selected.match(/^([A-Da-d])[\)\.]/);
+      const selectedLetter = match ? match[1].toUpperCase() : "";
+      const isCorrect = selectedLetter === q.correctAnswer;
       return {
         questionId: q.id,
         selectedAnswer: selected,
@@ -232,7 +234,9 @@ export function AITutor() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {q.options.map((opt, j) => {
                         let btnClass = "bg-space-black/50 border-white/10 text-gray-300 hover:border-white/30 hover:bg-white/5";
-                        const isCorrectOption = opt.startsWith(q.correctAnswer + ")") || opt.startsWith(q.correctAnswer + ".");
+                        const match = opt.match(/^([A-Da-d])[\)\.]/);
+                        const optLetter = match ? match[1].toUpperCase() : "";
+                        const isCorrectOption = optLetter === q.correctAnswer;
                         const isSelected = opt === quizAnswers[q.id];
 
                         if (quizSubmitted) {
@@ -430,7 +434,18 @@ export function AITutor() {
                         <p className="text-xs font-bold text-highlight-cyan mb-2">Key Points:</p>
                         <ul className="text-xs space-y-1">
                           {msg.keyPoints.map((point, j) => (
-                            <li key={j}>• {point}</li>
+                            <li key={j} className="flex gap-2">
+                              <span>•</span>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkMath]}
+                                rehypePlugins={[rehypeKatex]}
+                                components={{
+                                  p: ({ children }) => <span className="inline">{children}</span>
+                                }}
+                              >
+                                {point}
+                              </ReactMarkdown>
+                            </li>
                           ))}
                         </ul>
                       </div>

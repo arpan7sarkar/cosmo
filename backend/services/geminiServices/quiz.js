@@ -1,4 +1,5 @@
 import { getModel } from './model.js';
+import { generateContentWithRetry } from './utils.js';
 
 /**
  * Generate quiz for a topic
@@ -30,30 +31,18 @@ Rules:
 2. Include some application-based questions
 3. All 4 options should be plausible
 4. Response must be valid JSON only
-5. IMPORTANT: Wrap ALL mathematical formulas in dollar signs ($) for LaTeX rendering (e.g., use "$\\frac{1}{2}$", not "\frac{1}{2}" or "1/2").
-6. IMPORTANT: You MUST double-escape all backslashes (e.g., use "$\\psi$" instead of "$\psi$").`;
+5. IMPORTANT: Wrap ALL mathematical formulas in dollar signs ($) for LaTeX rendering (e.g., use "$\\\\frac{1}{2}$", not "\\frac{1}{2}" or "1/2").
+6. IMPORTANT: You MUST double-escape all backslashes (e.g., use "$\\\\psi$" instead of "$\\psi$").`;
 
   try {
-    const result = await model.generateContent(prompt);
+    const result = await generateContentWithRetry(model, prompt);
     const response = await result.response;
     const text = response.text();
 
-    let cleanText = text.replace(/```json/g, '').replace(/```/g, '');
-    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
 
     if (jsonMatch) {
-      let jsonString = jsonMatch[0];
-      // Attempt to fix common bad escapes if parse fails
-      try {
-        return JSON.parse(jsonString);
-      } catch (e) {
-        // Simple heuristic: replace single backslashes that aren't valid escapes
-        // Valid escapes: \" \\ \/ \b \f \n \r \t \uXXXX
-        // We want to turn \psi into \\psi, but leave \\psi alone (mostly)
-        // This is tricky safely, so let's just try a simpler replace for common issues:
-        jsonString = jsonString.replace(/\\([^\/"\\bfnrtu])/g, '\\\\$1');
-        return JSON.parse(jsonString);
-      }
+      return JSON.parse(jsonMatch[0]);
     }
 
     throw new Error("Invalid AI response format");

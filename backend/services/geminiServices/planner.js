@@ -1,4 +1,5 @@
 import { getModel } from './model.js';
+import { generateContentWithRetry } from './utils.js';
 
 /**
  * Generate study plan using AI
@@ -8,28 +9,7 @@ import { getModel } from './model.js';
  * @returns {Promise<Object>} - AI-optimized study plan
  */
 
-/**
- * Helper to generate content with retry logic for 503 errors
- */
-const generateContentWithRetry = async (model, prompt, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await model.generateContent(prompt);
-      return result;
-    } catch (error) {
-      const isOverloaded = error.message.includes('503') || error.message.includes('overloaded');
 
-      if (isOverloaded && i < retries - 1) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, i) * 1000;
-        console.log(`Gemini overloaded. Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-      throw error;
-    }
-  }
-};
 
 /**
  * Generate study plan using AI
