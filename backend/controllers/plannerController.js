@@ -223,18 +223,38 @@ export const getAllStudyPlans = async (req, res) => {
     const userId = user._id;
 
     const plans = await StudyPlan.find({ userId })
-      .select('title subjects examDate createdAt hoursPerDay estimatedReadiness')
+      .select('title subjects examDate createdAt hoursPerDay estimatedReadiness startDate')
       .sort({ createdAt: -1 });
 
-    // Add computed field for total topics
-    const formattedPlans = plans.map(p => ({
-      _id: p._id,
-      title: p.title,
-      examDate: p.examDate,
-      createdAt: p.createdAt,
-      subjectCount: p.subjects?.length || 0,
-      topicCount: p.subjects?.reduce((acc, s) => acc + s.topics.length, 0) || 0,
-      readiness: p.estimatedReadiness || 0
+    // Get completion stats for each plan
+    const formattedPlans = await Promise.all(plans.map(async (p) => {
+      // Get calendar events for this plan
+      const events = await CalendarEvent.find({ studyPlanId: p._id });
+      const totalSessions = events.length;
+      const completedSessions = events.filter(e => e.completed).length;
+      const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+      // Calculate days until exam
+      const daysUntilExam = p.examDate 
+        ? Math.ceil((new Date(p.examDate) - new Date()) / (1000 * 60 * 60 * 24))
+        : null;
+
+      return {
+        _id: p._id,
+        title: p.title,
+        examDate: p.examDate,
+        createdAt: p.createdAt,
+        subjectCount: p.subjects?.length || 0,
+        topicCount: p.subjects?.reduce((acc, s) => acc + (s.topics?.length || 0), 0) || 0,
+        readiness: p.estimatedReadiness || 0,
+        totalSessions,
+        completedSessions,
+        completionRate,
+        daysUntilExam,
+        status: daysUntilExam !== null && daysUntilExam < 0 ? 'completed' : 
+                completionRate === 100 ? 'completed' : 
+                totalSessions > 0 ? 'in_progress' : 'not_started'
+      };
     }));
 
     res.json({
