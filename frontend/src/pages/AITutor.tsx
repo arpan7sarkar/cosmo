@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
-import { Bot, Send, User, Trophy, Loader2, CheckCircle, XCircle, Plus, MessageSquare, Trash2, ChevronDown } from "lucide-react";
+import { Bot, Send, User, Trophy, Loader2, CheckCircle, XCircle, Plus, MessageSquare, Trash2, ChevronDown, Shield, Target, Rocket, Globe, Sparkles, AlertTriangle } from "lucide-react";
 import { cn } from "../lib/utils";
 import { explainTopic, generateQuiz, submitQuiz, getChatSessions, getChatSession, deleteChatSession } from "../lib/api";
 import ReactMarkdown from 'react-markdown';
@@ -20,12 +20,12 @@ const PREDEFINED_TOPICS = [
 ];
 
 const ANALOGIES = [
-  { id: "marvel", label: "Marvel Universe", icon: "🛡️" },
-  { id: "football", label: "Football", icon: "⚽" },
-  { id: "cricket", label: "Cricket", icon: "🏏" },
-  { id: "scifi", label: "Sci-Fi Movies", icon: "🚀" },
-  { id: "reallife", label: "Real Life", icon: "🌍" },
-  { id: "Custom", label: "Custom", icon: "✨" },
+  { id: "marvel", label: "Marvel Universe", icon: Shield },
+  { id: "football", label: "Football", icon: Trophy },
+  { id: "cricket", label: "Cricket", icon: Target },
+  { id: "scifi", label: "Sci-Fi Movies", icon: Rocket },
+  { id: "reallife", label: "Real Life", icon: Globe },
+  { id: "Custom", label: "Custom", icon: Sparkles },
 ];
 
 interface Message {
@@ -55,6 +55,14 @@ interface QuizResult {
   passed: boolean;
 }
 
+interface ModalInfo {
+  isOpen: boolean;
+  type: 'confirm' | 'alert';
+  title: string;
+  message: string;
+  onConfirm?: () => void;
+}
+
 export function AITutor() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -80,7 +88,26 @@ export function AITutor() {
   const [quizAnswers, setQuizAnswers] = useState<Record<number, string>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [isTopicDropdownOpen, setIsTopicDropdownOpen] = useState(false);
+  const [modal, setModal] = useState<ModalInfo>({
+    isOpen: false,
+    type: 'alert',
+    title: '',
+    message: ''
+  });
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsTopicDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Load Sessions List
   useEffect(() => {
@@ -147,22 +174,27 @@ export function AITutor() {
 
   const deleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this chat session?")) return;
-
-    try {
-      const response = await deleteChatSession(sessionId);
-      if (response.success) {
-        // Remove from list
-        setSessions(prev => prev.filter(s => s._id !== sessionId));
-
-        // If current session was deleted, go to new chat
-        if (currentSessionId === sessionId) {
-          startNewChat();
+    
+    setModal({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Delete Chat?',
+      message: 'This will permanently remove this learning session. Are you sure?',
+      onConfirm: async () => {
+        try {
+          const response = await deleteChatSession(sessionId);
+          if (response.success) {
+            setSessions(prev => prev.filter(s => s._id !== sessionId));
+            if (currentSessionId === sessionId) {
+              startNewChat();
+            }
+          }
+        } catch (err) {
+          console.error("Failed to delete session", err);
         }
+        setModal(prev => ({ ...prev, isOpen: false }));
       }
-    } catch (err) {
-      console.error("Failed to delete session", err);
-    }
+    });
   };
 
   const startNewChat = () => {
@@ -180,11 +212,18 @@ export function AITutor() {
     if (loading) return;
 
     // If new chat, we need a topic
-    const topicToSend = isNewChat ? (selectedTopic || customTopic) : null;
+    const topicToSend = isNewChat 
+      ? (selectedTopic === 'Custom' ? customTopic : (selectedTopic || customTopic)) 
+      : null;
     const messageToSend = input || `Explain ${topicToSend}`;
 
     if (isNewChat && !topicToSend) {
-      alert("Please select or enter a topic first!");
+      setModal({
+        isOpen: true,
+        type: 'alert',
+        title: 'Topic Required',
+        message: 'Please pick a topic or type one of your own before starting the cosmic journey!'
+      });
       return;
     }
 
@@ -375,7 +414,7 @@ export function AITutor() {
 
       <div className="h-[calc(100vh-1rem)] pt-24 flex max-w-7xl mx-auto px-4 pb-8 gap-6 justify-center">
         {/* Sidebar - Chat Session History */}
-        <div className="w-80 flex-shrink-0 flex flex-col gap-4 hidden md:flex">
+        <div className="w-80 flex-shrink-0 hidden md:flex flex-col gap-4">
           <Card className="bg-brand-dark border-brand-gray flex-1 overflow-auto flex flex-col">
             <div className="p-4 border-b border-brand-gray">
               <Button onClick={startNewChat} className="w-full justify-center gap-2 bg-white text-black hover:bg-gray-200">
@@ -433,55 +472,63 @@ export function AITutor() {
                     <label className="text-xs text-gray-400 mb-2 block">Topic</label>
                     <div className="space-y-2">
                       {/* Custom Topic Dropdown */}
-                      <div className="relative">
+                      <div className="relative" ref={dropdownRef}>
                         <button
-                          className="w-full flex items-center justify-between bg-brand-black border border-brand-gray rounded-lg p-2 text-sm text-white focus:outline-none focus:border-white transition-all"
-                          onClick={() => {
-                            const dropdown = document.getElementById("topic-dropdown");
-                            if (dropdown) dropdown.classList.toggle("hidden");
-                          }}
-                          onBlur={() => setTimeout(() => document.getElementById("topic-dropdown")?.classList.add("hidden"), 200)}
+                          className="w-full flex items-center justify-between bg-brand-black border border-brand-gray rounded-lg p-3 text-sm text-white focus:outline-none focus:border-white transition-all hover:bg-white/5 shadow-inner"
+                          onClick={() => setIsTopicDropdownOpen(!isTopicDropdownOpen)}
+                          type="button"
                         >
-                          <span>{selectedTopic || "Select a topic..."}</span>
-                          <ChevronDown className="w-4 h-4 opacity-70" />
+                          <span className="truncate">{selectedTopic || "Select a predefined topic..."}</span>
+                          <ChevronDown className={cn("w-4 h-4 opacity-70 transition-transform duration-200", isTopicDropdownOpen && "rotate-180")} />
                         </button>
 
-                        <div id="topic-dropdown" className="hidden absolute z-50 mt-2 w-full bg-brand-dark border border-brand-gray rounded-lg shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2">
-                          {PREDEFINED_TOPICS.map(t => (
-                            <div
-                              key={t}
-                              className="px-4 py-2 hover:bg-white/5 hover:text-white cursor-pointer transition-colors text-gray-300 text-sm border-b border-brand-gray last:border-0"
-                              onClick={() => {
-                                setSelectedTopic(t);
-                                setCustomTopic("");
-                                document.getElementById("topic-dropdown")?.classList.add("hidden");
-                              }}
-                            >
-                              {t}
+                        {isTopicDropdownOpen && (
+                          <div className="absolute z-50 mt-2 w-full bg-brand-dark border border-brand-gray rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 backdrop-blur-xl">
+                            <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+                              {PREDEFINED_TOPICS.map(t => (
+                                <div
+                                  key={t}
+                                  className={cn(
+                                    "px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-sm border-b border-brand-gray/50 last:border-0",
+                                    selectedTopic === t ? "text-white bg-white/5" : "text-gray-400"
+                                  )}
+                                  onClick={() => {
+                                    setSelectedTopic(t);
+                                    setCustomTopic("");
+                                    setIsTopicDropdownOpen(false);
+                                  }}
+                                >
+                                  {t}
+                                </div>
+                              ))}
+                              <div
+                                className={cn(
+                                  "px-4 py-3 hover:bg-white/10 cursor-pointer transition-colors text-sm font-medium border-t border-brand-gray",
+                                  selectedTopic === "Custom" ? "text-white bg-white/5" : "text-white/40"
+                                )}
+                                onClick={() => {
+                                  setSelectedTopic("Custom");
+                                  setIsTopicDropdownOpen(false);
+                                }}
+                              >
+                                + Custom Topic...
+                              </div>
                             </div>
-                          ))}
-                          <div
-                            className="px-4 py-2 hover:bg-white/5 hover:text-white cursor-pointer transition-colors text-white/50 text-sm font-medium"
-                            onClick={() => {
-                              setSelectedTopic("Custom");
-                              // Input handles the rest
-                              document.getElementById("topic-dropdown")?.classList.add("hidden");
-                            }}
-                          >
-                            Custom Topic...
                           </div>
-                        </div>
+                        )}
                       </div>
-                      {(selectedTopic === "Custom" || (selectedTopic === "" && customTopic)) && (
-                        <Input
-                          placeholder="Enter your custom topic..."
-                          value={customTopic}
-                          onChange={(e) => {
-                            setCustomTopic(e.target.value);
-                            setSelectedTopic(""); // Clear dropdown visual if typing custom
-                          }}
-                          className="bg-brand-black border-brand-gray"
-                        />
+                      {(selectedTopic === "Custom" || (!selectedTopic && customTopic)) && (
+                        <div className="animate-in slide-in-from-top-2 duration-300">
+                          <Input
+                            placeholder="Type your complex topic (e.g. Backpropagation in Neural Networks)"
+                            value={customTopic}
+                            onChange={(e) => {
+                              setCustomTopic(e.target.value);
+                              // We don't clear selectedTopic here, just let it be Custom
+                            }}
+                            className="bg-brand-black border-brand-gray focus:border-white transition-all h-11"
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -496,7 +543,7 @@ export function AITutor() {
                             selectedAnalogy === analogy.id ? "bg-white text-black border-white" : "bg-brand-black border-brand-gray text-gray-400"
                           )}
                         >
-                          <span>{analogy.icon}</span> {analogy.label}
+                          <analogy.icon className="w-3 h-3" /> {analogy.label}
                         </button>
                       ))}
                     </div>
@@ -567,6 +614,52 @@ export function AITutor() {
           </Card>
         </div>
       </div>
+
+      {/* Branded Portal-Style Modal */}
+      {modal.isOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModal(prev => ({ ...prev, isOpen: false }))}></div>
+          <Card className="relative w-full max-w-md bg-brand-dark border-brand-gray shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className={cn(
+                "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 transition-transform",
+                modal.type === 'confirm' ? "bg-red-500/20 text-red-500" : "bg-white/10 text-white"
+              )}>
+                {modal.type === 'confirm' ? <Trash2 className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">{modal.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed mb-8">{modal.message}</p>
+              
+              <div className="flex gap-3">
+                {modal.type === 'confirm' ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 border-brand-gray text-gray-400 hover:text-white hover:bg-white/5"
+                      onClick={() => setModal(prev => ({ ...prev, isOpen: false }))}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      className="flex-1 bg-red-600 text-white hover:bg-red-700 border-none"
+                      onClick={modal.onConfirm}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    className="w-full bg-white text-black hover:bg-gray-200 font-bold"
+                    onClick={() => setModal(prev => ({ ...prev, isOpen: false }))}
+                  >
+                    Understood
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </>
   );
 }

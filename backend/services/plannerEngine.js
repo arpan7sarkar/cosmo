@@ -34,7 +34,7 @@ export const createCalendarEvents = async (plan, userId, studyPlanId) => {
       const event = new CalendarEvent({
         userId,
         studyPlanId,
-        title: `${session.type === 'review' ? '📝 Review:' : '📚 Study:'} ${topicName}`,
+        title: `${session.type === 'review' ? 'Review:' : 'Study:'} ${topicName}`,
         description: `Subject: ${subjectName}\nPriority: ${session.priority || 'medium'}`,
         date: new Date(day.date),
         startTime: `${startHour.toString().padStart(2, '0')}:00`,

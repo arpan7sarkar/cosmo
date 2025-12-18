@@ -189,11 +189,11 @@ export function StudyPlanner() {
         </div>
         <div className="flex gap-3">
           <Link to="/upload">
-            <Button variant="outline" size="sm" className="gap-2 border-brand-gray text-brand-text-muted hover:text-white">
+            <Button variant="outline" size="sm" className="gap-2 border-brand-gray text-brand-text-muted hover:text-black">
               <Upload className="w-4 h-4" /> New Plan
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={handleViewHistory} className="gap-2 border-brand-gray text-brand-text-muted hover:text-white">
+          <Button variant="outline" size="sm" onClick={handleViewHistory} className="gap-2 border-brand-gray text-brand-text-muted hover:text-black">
             <History className="w-4 h-4" /> History
           </Button>
           <Button variant="default" size="sm" onClick={fetchEvents} disabled={loading} className="gap-2 bg-white text-black hover:bg-gray-200">
