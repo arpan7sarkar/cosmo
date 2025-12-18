@@ -52,7 +52,7 @@ export function StudyPlanner() {
     try {
       const response = await getStudyCalendar(undefined, undefined, undefined, currentPlanId || undefined);
       if (response.success) {
-        // FullCalendar accepts standard ISO strings or Date objects
+        // FullCalendar accepts standard ISO strings or Date objects  
         // The API returns structured objects or ISO strings.
         // We'll normalize to standard event objects.
         const formattedEvents = response.data.map((event: any) => {
@@ -61,7 +61,7 @@ export function StudyPlanner() {
           let start, end;
           if (typeof event.start === 'object' && event.start.year) {
             start = new Date(event.start.year, event.start.month, event.start.day, event.start.hour, event.start.minute);
-          } else {
+          } else {  
             start = new Date(event.start);
           }
 
