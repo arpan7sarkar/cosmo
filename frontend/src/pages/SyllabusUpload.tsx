@@ -157,7 +157,7 @@ export function SyllabusUpload() {
                   <p className="text-gray-400 mb-6">or</p>
                   <label
                     htmlFor="file-upload"
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 border border-nebula-purple text-nebula-purple hover:bg-nebula-purple hover:text-white cursor-pointer transition-colors"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 border border-nebula-purple text-nebula-purple hover:bg-nebula-purple hover:text-black cursor-pointer transition-colors"
                   >
                     Browse Files
                   </label>
@@ -184,7 +184,7 @@ export function SyllabusUpload() {
                           className={cn(
                             "px-2 py-2 rounded-md text-xs border transition-colors truncate",
                             timeline === opt
-                              ? "bg-nebula-purple border-nebula-purple text-white"
+                              ? "bg-nebula-purple border-nebula-purple text-black"
                               : "bg-transparent border-gray-600 text-gray-300 hover:border-gray-400"
                           )}
                         >
@@ -238,7 +238,11 @@ export function SyllabusUpload() {
                       </div>
                     </div>
                   ) : (
-                    <Button variant="neon" size="lg" className="w-full" onClick={startUpload}>
+                    <Button 
+                      size="lg" 
+                      className="w-full bg-nebula-purple border-nebula-purple text-black hover:bg-gray-300 font-bold transition-all shadow-lg shadow-nebula-purple/20" 
+                      onClick={startUpload}
+                    >
                       Generate Study Plan
                     </Button>
                   )}
