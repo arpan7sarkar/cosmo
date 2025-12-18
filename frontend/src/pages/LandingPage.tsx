@@ -1,87 +1,105 @@
 import { Button } from "../components/ui/Button";
-import { Card, CardContent, CardTitle } from "../components/ui/Card";
 import { Link } from "react-router-dom";
-import { ArrowRight, Brain, Calendar, Upload } from "lucide-react";
+import { Brain, BarChart3, Lock } from "lucide-react";
 
 export function LandingPage() {
   return (
-    <div className="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div className="min-h-screen bg-brand-black text-brand-text pt-24 font-inter">
+      
       {/* Hero Section */}
-      <section className="flex-1 flex flex-col justify-center items-center text-center px-4 py-20 bg-[url('/bg-stars.svg')] bg-cover relative overflow-hidden">
-        {/* Background Elements using CSS pseudo or inline styles for simple shapes */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-nebula-purple/20 rounded-full blur-3xl animate-float -z-10" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cosmic-blue/40 rounded-full blur-3xl animate-pulse-glow -z-10" />
-
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-highlight-cyan to-nebula-purple animate-fade-in-up">
-          Master Your Syllabus <br /> <span className="text-starlight-white">In Light Speed</span>
+      <section className="relative px-6 pt-20 pb-32 text-center max-w-5xl mx-auto">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-brand-gray/20 via-brand-black to-brand-black -z-10 blur-3xl opacity-50" />
+        
+        <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-8 leading-[0.9]">
+          The Smarter Way <br />
+          <span className="text-brand-text-muted">to Master Learning</span>
         </h1>
-        <p className="text-xl text-gray-400 max-w-2xl mb-10 text-lg">
-          AI-powered study planner and tutor that adapts to your learning style. Upload your syllabus and let us chart the course to success.
+        
+        <p className="text-lg md:text-xl text-brand-text-muted max-w-2xl mx-auto mb-12 leading-relaxed">
+          Learn-Flow helps modern students streamline their education with a powerful, AI-driven platform that adapts to you.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Link to="/upload">
-            <Button size="lg" variant="neon" className="gap-2">
-              <Upload className="w-4 h-4" /> Upload Syllabus
-            </Button>
-          </Link>
+        <div className="flex items-center justify-center gap-4">
           <Link to="/dashboard">
-            <Button size="lg" variant="outline" className="gap-2">
-              Start Learning <ArrowRight className="w-4 h-4" />
+            <Button size="lg" className="h-12 px-8 rounded-full bg-white text-black hover:bg-gray-200 font-bold text-sm tracking-wide transition-all transform hover:scale-105">
+              Start for free
+            </Button>
+          </Link>
+          <Link to="/features">
+            <Button size="lg" variant="ghost" className="h-12 px-8 rounded-full border border-brand-gray text-brand-text hover:bg-brand-gray/50 text-sm font-semibold">
+              Explore Features
             </Button>
           </Link>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-deep-void">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-              Why Learn-Flow?
-            </h2>
-            <p className="mt-4 text-gray-400">Everything you need to ace your exams.</p>
+      {/* Bento Grid Features */}
+      <section className="px-6 pb-32 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-6 h-auto md:h-[600px]">
+          
+          {/* Main Large Card */}
+          <div className="md:col-span-2 md:row-span-2 bg-brand-dark border border-brand-gray rounded-[32px] p-8 md:p-12 flex flex-col justify-between relative overflow-hidden group">
+             <div className="relative z-10">
+               <div className="w-12 h-12 rounded-full bg-brand-gray flex items-center justify-center mb-6">
+                 <Brain className="w-6 h-6 text-white" />
+               </div>
+               <h3 className="text-3xl font-bold mb-4">Smart Matching</h3>
+               <p className="text-brand-text-muted text-lg">Our AI analyzes your syllabus to find your perfect learning path.</p>
+             </div>
+             <div className="mt-8 relative h-64 w-full bg-brand-black/50 rounded-2xl border border-brand-gray/30 p-6 flex flex-col items-center justify-center gap-4 group-hover:bg-brand-black/70 transition-colors">
+                <div className="w-16 h-16 rounded-full bg-brand-light-gray flex items-center justify-center">
+                  <span className="text-2xl">🎓</span>
+                </div>
+                <div className="text-center">
+                  <div className="font-bold">Student</div>
+                  <div className="text-xs text-brand-text-muted">Analysis Complete</div>
+                </div>
+             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="bg-cosmic-blue/30 border-white/5 hover:border-nebula-purple/50 transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="rounded-full w-12 h-12 bg-nebula-purple/20 flex items-center justify-center mb-4">
-                  <Calendar className="w-6 h-6 text-nebula-purple" />
-                </div>
-                <CardTitle className="mb-2">Smart Planner</CardTitle>
-                <p className="text-gray-400">
-                  Auto-generates a personalized study schedule based on your syllabus and exam dates.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-cosmic-blue/30 border-white/5 hover:border-nebula-purple/50 transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="rounded-full w-12 h-12 bg-highlight-cyan/20 flex items-center justify-center mb-4">
-                  <Brain className="w-6 h-6 text-highlight-cyan" />
-                </div>
-                <CardTitle className="mb-2">AI Tutor</CardTitle>
-                <p className="text-gray-400">
-                  Stuck on a concept? Get instant explanations with analogies like Marvel or Football.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-cosmic-blue/30 border-white/5 hover:border-nebula-purple/50 transition-all duration-300">
-              <CardContent className="pt-6">
-                <div className="rounded-full w-12 h-12 bg-pink-500/20 flex items-center justify-center mb-4">
-                  <Upload className="w-6 h-6 text-pink-500" />
-                </div>
-                <CardTitle className="mb-2">Instant Setup</CardTitle>
-                <p className="text-gray-400">
-                  Simply upload your syllabus PDF and we'll extract the topics and deadlines for you.
-                </p>
-              </CardContent>
-            </Card>
+          {/* Top Right Wide Card */}
+          <div className="md:col-span-2 md:row-span-1 bg-brand-dark border border-brand-gray rounded-[32px] p-10 flex flex-col justify-center relative overflow-hidden group">
+            <h3 className="text-2xl font-bold mb-2">Live Collaboration</h3>
+            <p className="text-brand-text-muted mb-6">Code editor and chat in one place (Coming Soon).</p>
+            <div className="bg-brand-black rounded-lg p-4 font-mono text-xs text-brand-text-muted border border-brand-gray/50">
+               <span className="text-purple-400">function</span> <span className="text-blue-400">learn</span>() {'{'} <br/>
+               &nbsp;&nbsp;<span className="text-purple-400">return</span> <span className="text-green-400">"success"</span>;<br/>
+               {'}'}
+            </div>
           </div>
+
+          {/* Bottom Small Card 1 */}
+          <div className="md:col-span-1 md:row-span-1 bg-brand-dark border border-brand-gray rounded-[32px] p-8 flex flex-col justify-between group hover:border-white/20 transition-colors">
+            <Lock className="w-8 h-8 text-brand-text-muted mb-4" />
+            <div>
+              <h3 className="text-lg font-bold mb-1">Secure</h3>
+              <p className="text-xs text-brand-text-muted">Enterprise grade security for your data.</p>
+            </div>
+          </div>
+
+          {/* Bottom Small Card 2 */}
+          <div className="md:col-span-1 md:row-span-1 bg-brand-dark border border-brand-gray rounded-[32px] p-8 flex flex-col justify-between group hover:border-white/20 transition-colors">
+            <BarChart3 className="w-8 h-8 text-white mb-4" />
+            <div>
+              <h3 className="text-lg font-bold mb-1">Growth</h3>
+              <p className="text-xs text-brand-text-muted">Track your progress with detailed charts.</p>
+            </div>
+            <div className="flex gap-1 mt-4 items-end h-8">
+               <div className="w-1/4 bg-brand-gray h-2/3 rounded-sm"></div>
+               <div className="w-1/4 bg-brand-gray h-1/2 rounded-sm"></div>
+               <div className="w-1/4 bg-brand-gray h-3/4 rounded-sm"></div>
+               <div className="w-1/4 bg-white h-full rounded-sm shadow-[0_0_10px_white]"></div>
+            </div>
+          </div>
+
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-brand-gray py-12 text-center text-brand-text-muted text-sm">
+        <p>&copy; 2025 Learn-Flow. All rights reserved.</p>
+      </footer>
+
     </div>
   );
 }

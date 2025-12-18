@@ -7,12 +7,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        'space-black': '#0B0B15',
-        'cosmic-blue': '#1A1A2E',
-        'starlight-white': '#EAEAEA',
-        'nebula-purple': '#6C63FF',
-        'highlight-cyan': '#00F0FF',
-        'deep-void': '#050510',
+        'brand-black': '#050505',
+        'brand-dark': '#0A0A0A',
+        'brand-darker': '#080808',
+        'brand-gray': '#1F1F1F',
+        'brand-light-gray': '#2A2A2A',
+        'brand-text': '#FFFFFF',
+        'brand-text-muted': '#A1A1AA',
+        'brand-accent': '#FFFFFF',
+        
+        // Keeping legacy for compatibility until refactor complete, but mapping them to new theme roughly
+        'space-black': '#050505',
+        'cosmic-blue': '#0A0A0A', 
+        'starlight-white': '#FFFFFF',
+        'nebula-purple': '#FFFFFF', // Monochromatized
+        'highlight-cyan': '#FFFFFF', // Monochromatized
+        'deep-void': '#000000',
+      },
+      fontFamily: {
+        plaster: ['Plaster', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+      },
+      backgroundImage: {
+         'grid-pattern': "linear-gradient(to right, #1f1f1f 1px, transparent 1px), linear-gradient(to bottom, #1f1f1f 1px, transparent 1px)",
+      },
+      backgroundSize: {
+        'grid': '40px 40px',
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',

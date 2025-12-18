@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { SyllabusUpload } from "./pages/SyllabusUpload";
 import { StudyPlanner } from "./pages/StudyPlanner";
 import { AITutor } from "./pages/AITutor";
+import { Features } from "./pages/Features";
 import ScrollToTop from "./components/layout/ScrollToTop";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="upload" element={<SyllabusUpload />} />
           <Route path="planner" element={<StudyPlanner />} />
           <Route path="tutor" element={<AITutor />} />
+          <Route path="features" element={<Features />} />
         </Route>
       </Routes>
     </BrowserRouter>
