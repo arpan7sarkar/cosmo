@@ -16,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [process.env.FRONTEND_URL,'http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
@@ -71,10 +71,13 @@ app.use((req, res) => {
 });
 
 // Start server
+// Start server only if not running in Vercel (or similar serverless) environment
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Learn-Flow Backend running on port ${PORT}`);
-  console.log(`📚 API available at http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Learn-Flow Backend running on port ${PORT}`);
+    console.log(`📚 API available at http://localhost:${PORT}`);
+  });
+}
 
 export default app;
