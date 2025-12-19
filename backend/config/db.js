@@ -13,11 +13,7 @@ const connectDB = async () => {
   }
 
   if (!cached.promise) {
-    const opts = {
-      bufferCommands: false, // Disable buffering to fail fast if not connected
-    };
-
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(process.env.MONGODB_URI).then((mongoose) => {
       return mongoose;
     });
   }
