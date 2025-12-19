@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { parsePDF, extractTopicsFromText, extractExamDate } from '../services/pdfParser.js';
 import StudyPlan from '../models/StudyPlan.js';
 import User from '../models/User.js';
@@ -13,19 +12,17 @@ export const uploadSyllabus = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const filePath = req.file.path;
+    // Use buffer from memory storage (Vercel compatible)
+    const buffer = req.file.buffer;
     
-    // Parse PDF
-    const text = await parsePDF(filePath);
+    // Parse PDF from buffer
+    const text = await parsePDF(buffer);
     
     // Extract subjects and topics
     const subjects = extractTopicsFromText(text);
     
     // Extract exam date
     const examDate = extractExamDate(text);
-
-    // Clean up uploaded file
-    fs.unlinkSync(filePath);
 
     // Get or create user based on email from request
     const userEmail = req.body.userEmail;

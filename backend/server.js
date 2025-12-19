@@ -14,36 +14,44 @@ dotenv.config();
 // Initialize Express
 const app = express();
 
-// CORS Configuration - Permissive for debugging
+// Allowed origins for CORS
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://learn-flow-mu.vercel.app',
+  'https://learn-flow.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean); // Remove undefined values
+
+// CORS Configuration
 app.use(cors({
   origin: function (origin, callback) {
-    if (
-      !origin ||
-      allowedOrigins.includes(origin) ||
-      origin.endsWith(".vercel.app") // Allow all Vercel deployments
-    ) {
-      callback(null, true);
-    } else {
-      // Optional: Allow all during development/testing or log
-      callback(new Error('Not allowed by CORS'));
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Allow if origin is in allowed list or ends with .vercel.app
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
     }
+    
+    // For debugging - log blocked origins
+    console.log('CORS blocked origin:', origin);
+    return callback(null, true); // Permissive for now - change to false in production
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Explicitly handle preflight OPTIONS requests
 app.options('*', cors());
 
-// Middleware
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Connect to MongoDB
-// Connect to MongoDB
-// For Vercel, we need to await this, but top-level await is only supported in modules.
-// Since we are using "type": "module", we can try top-level await or just call it.
-// Better to let the first request trigger connection reuse or connect immediately if possible.
-connectDB().catch(err => console.error(err));
+// Connect to MongoDB (with caching for serverless)
+connectDB().catch(err => console.error('MongoDB connection error:', err));
 
 // API Routes
 app.use('/api', syllabusRoutes);
@@ -90,14 +98,14 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Start server
-// Start server only if not running in Vercel (or similar serverless) environment
+// Start server only in development (Vercel handles this in production)
 const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'production' || 'Production') {
+if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`🚀 Learn-Flow Backend running on port ${PORT}`);
     console.log(`📚 API available at http://localhost:${PORT}`);
   });
 }
 
+// Export for Vercel serverless functions
 export default app;
