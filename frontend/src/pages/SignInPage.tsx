@@ -99,6 +99,14 @@ export function SignInPage() {
           {/* Clerk SignIn Component */}
           <SignIn
             appearance={{
+              variables: {
+                colorPrimary: "white",
+                colorText: "white",
+                colorBackground: "#0a0a0a",
+                colorInputBackground: "#050505",
+                colorInputText: "white",
+                colorTextSecondary: "#9ca3af",
+              },
               elements: {
                 rootBox: "w-full",
                 card: "bg-[#0a0a0a] border border-white/10 shadow-2xl shadow-black/50 rounded-2xl",
@@ -114,11 +122,14 @@ export function SignInPage() {
                   "bg-[#050505] border border-white/10 text-white rounded-lg focus:border-white/30 focus:ring-0 placeholder:text-gray-600",
                 formButtonPrimary:
                   "bg-white text-black hover:bg-gray-200 font-medium rounded-full transition-all shadow-[0_0_30px_-10px_rgba(255,255,255,0.3)]",
+                footer: "bg-transparent",
+                footerActionText: "text-gray-500",
                 footerActionLink: "text-white hover:text-gray-300",
                 identityPreviewEditButton: "text-white hover:text-gray-300",
                 formFieldAction: "text-gray-400 hover:text-white",
                 alertText: "text-gray-300",
                 logoBox: "hidden",
+                navbar: "hidden",
               },
               layout: {
                 socialButtonsPlacement: "top",
