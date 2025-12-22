@@ -41,12 +41,12 @@ export function Pricing() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {plans.map((plan, i) => (
-          <div 
-            key={i} 
+          <div
+            key={i}
             className={`
               relative p-8 rounded-3xl border flex flex-col
-              ${plan.highlight 
-                ? "bg-white/[0.05] border-white/20 shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)]" 
+              ${plan.highlight
+                ? "bg-white/[0.05] border-white/20 shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)]"
                 : "bg-white/[0.02] border-white/5 hover:border-white/10 transition-colors"
               }
             `}
@@ -79,24 +79,22 @@ export function Pricing() {
             </div>
 
             {plan.upcoming ? (
-              <Button 
+              <Button
                 onClick={() => alert(`The ${plan.name} plan is coming soon!`)}
-                className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
-                  plan.highlight 
-                    ? "bg-white/50 text-black cursor-not-allowed hover:bg-white/50" 
+                className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${plan.highlight
+                    ? "bg-white/50 text-black cursor-not-allowed hover:bg-white/50"
                     : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/5 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 Upcoming
               </Button>
             ) : (
-              <Link to="/dashboard" className="w-full">
-                <Button 
-                  className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${
-                    plan.highlight 
-                      ? "bg-white text-black hover:bg-gray-200" 
+              <Link to="/sign-in" className="w-full">
+                <Button
+                  className={`w-full rounded-full h-12 font-medium tracking-wide transition-all ${plan.highlight
+                      ? "bg-white text-black hover:bg-gray-200"
                       : "bg-white/5 text-white hover:bg-white/10 border border-white/10"
-                  }`}
+                    }`}
                 >
                   Get Started
                 </Button>
