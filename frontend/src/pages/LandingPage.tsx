@@ -29,30 +29,30 @@ export function LandingPage() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-[#050505] text-white pt-24 font-inter selection:bg-white/20 relative group overflow-x-hidden"
       onMouseMove={handleMouseMove}
     >
       {/* Background Grid */}
-      <div className="fixed inset-0 z-0 opacity-[0.15] pointer-events-none" 
-           style={{ 
-             backgroundImage: 'linear-gradient(to right, #333 1px, transparent 1px), linear-gradient(to bottom, #333 1px, transparent 1px)',
-             backgroundSize: '4rem 4rem',
-             maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)'
-           }} 
+      <div className="fixed inset-0 z-0 opacity-[0.15] pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(to right, #333 1px, transparent 1px), linear-gradient(to bottom, #333 1px, transparent 1px)',
+          backgroundSize: '4rem 4rem',
+          maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)'
+        }}
       />
 
       {/* Interactive Cursor Gradient */}
       <motion.div
         className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300 group-hover:opacity-100 opacity-40 mix-blend-screen"
-        style={{ 
+        style={{
           background: background,
         }}
       />
-      
+
       {/* Hero Section */}
       <section className="relative px-6 pt-20 pb-48 text-center max-w-5xl mx-auto z-10">
-        
+
         {/* Floating Accents (Stars/Plus) */}
         <div className="absolute top-20 left-[10%] text-gray-700 animate-pulse">+</div>
         <div className="absolute top-40 right-[15%] text-gray-700 animate-pulse delay-700">+</div>
@@ -68,14 +68,14 @@ export function LandingPage() {
             Revolutionize Your <br />
             Learning Experience
           </h1>
-          
+
           <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
-            Experience the future of education with our state-of-the-art AI technology. 
+            Experience the future of education with our state-of-the-art AI technology.
             Secure, personalized, and designed to help you master every concept.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
-             <Link to="/dashboard">
+            <Link to="/sign-in">
               <Button className="h-14 px-10 rounded-full bg-white text-black hover:bg-gray-200 font-medium text-base tracking-wide transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.4)] hover:scale-105">
                 Get Started
               </Button>
